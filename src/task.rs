@@ -29,7 +29,8 @@
 //! exec's task finalizer. Once the parent is signalled, no instruction of
 //! the program runs on the child any more, so the program may end and be
 //! unloaded right after a join, whatever the priorities. A child that
-//! panics never signals: its join waits forever.
+//! panics returns to its catch point (`track::catch`), what it registered
+//! is released, and it signals as usual: its join gives an error.
 
 use core::marker::PhantomData;
 use core::mem::{align_of, size_of};

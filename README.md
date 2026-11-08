@@ -16,6 +16,14 @@ cover the common calls and grow as programs need them. APIs may still
 change. It supersedes the earlier
 [rust-for-amigaos4](https://github.com/derfsss/rust-for-amigaos4).
 
+## Documentation
+
+**[docs/](docs/README.md)** is the user guide: getting started, the
+AmigaOS concepts you need, writing programs, drivers and libraries, every
+Cargo feature, debugging, troubleshooting, and a guide to each part of the
+crate (exec, devices, DOS, utility, GUI, networking, Vulkan and more), with
+examples. Start at [docs/README.md](docs/README.md).
+
 ## What is in it
 
 | Module | Contents |

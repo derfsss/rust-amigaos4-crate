@@ -10,8 +10,9 @@
 //!
 //! Strings are in the locale's code set ([`Locale::code_set`]: 4 is
 //! ISO-8859-1, 106 UTF-8), not necessarily UTF-8: texts come back as
-//! bytes, with `_lossy` helpers. Not wrapped yet: FormatString (a printf
-//! with an untyped argument block).
+//! bytes, with `_lossy` helpers. [`Locale::format`] wraps FormatString32,
+//! checking every command in the template against the typed `FmtArg`s
+//! before the call.
 
 use alloc::string::String;
 use alloc::vec::Vec;

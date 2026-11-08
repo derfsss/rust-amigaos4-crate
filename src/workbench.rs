@@ -429,6 +429,7 @@ unsafe fn release_app_menu_item(mi: usize, _: usize) {
 }
 
 
+#[cfg(feature = "icon")]
 pub struct AppIcon<'a> {
     _t: crate::track::Tracked,
     wb: *mut WorkbenchIFace,
