@@ -364,11 +364,12 @@ The serial output ends with `rusttest.device: kickstart load test PASSED`
 
 ### Projects built on the crate
 
-- VirtioRust: drivers for QEMU's virtio devices (virtionet.device,
-  virtiorng.device, virtioscsi.device), with their test programs and
-  benches. The crate keeps the generic `virtio` layer they use.
-- RustSocket: rustsocket.library, a Roadshow-compatible TCP/IP stack
-  (bsdsocket.library) on smoltcp.
+- [VirtioRust](https://github.com/derfsss/VirtioRust): drivers for QEMU's
+  virtio devices (virtionet.device, virtiorng.device, virtioscsi.device),
+  with their test programs and benches. The crate keeps the generic
+  `virtio` layer they use.
+- [RustSocket](https://github.com/derfsss/RustSocket): rustsocket.library,
+  a Roadshow-compatible TCP/IP stack (bsdsocket.library) on smoltcp.
 
 Both use this crate as a git submodule.
 
@@ -424,6 +425,36 @@ interface in `netinclude/interfaces`.
   `glue/freestanding_mem.c` exists. Its functions are weak, so a definition
   elsewhere in the link wins.
 
+## Credits
+
+- [AmigaLabs/rust](https://github.com/AmigaLabs/rust) (branch `amigaos-port`):
+  the Rust fork with the `powerpc-unknown-amigaos` target this crate is
+  built for.
+- [AmigaLabs/clib4](https://github.com/AmigaLabs/clib4): the C library
+  that programs' `std` runs on.
+- [walkero-gr/amigagccondocker](https://github.com/walkero-gr/amigagccondocker):
+  the cross-compiler Docker image (gcc and the AmigaOS SDK) the packages
+  link in.
+- [ash-rs/ash](https://github.com/ash-rs/ash): the Vulkan binding behind
+  the optional `ash` feature.
+- [KhronosGroup/Vulkan-Headers](https://github.com/KhronosGroup/Vulkan-Headers):
+  the Vulkan headers copied into `third_party/vulkan` (Apache-2.0).
+- [derfsss/VulkanOS4](https://github.com/derfsss/VulkanOS4): where the
+  VK_AMIGA_surface extension's shape (`vulkan_amiga.h`) comes from.
+- [derfsss/rust-for-amigaos4](https://github.com/derfsss/rust-for-amigaos4):
+  the earlier crate this one supersedes.
+- [derfsss/VirtualSCSIDevice](https://github.com/derfsss/VirtualSCSIDevice)
+  and [derfsss/Virtio9PFS-handler](https://github.com/derfsss/Virtio9PFS-handler):
+  the C drivers whose MMIO practice the `arch` helpers follow.
+- The AISS toolbar images in `apps/imgview` are Martin Merz's
+  ([masonicons.de](http://www.masonicons.de)); see that app's README.
+- The AmigaOS SDK (Hyperion Entertainment) is what the bindings are
+  checked against; its headers are not part of this repository.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
+
+---
+
+Richard Gibbs — rich_gibbs@hotmail.com
