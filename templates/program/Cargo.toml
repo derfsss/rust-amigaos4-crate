@@ -1,0 +1,19 @@
+[package]
+name = "my-program"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "my-program"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+# Not `true` or "symbols": the linker's --strip-all makes a file AmigaOS
+# will not load (IoErr 305).
+strip = "debuginfo"
+
+[dependencies]
+# std (the default) on clib4; add the interfaces the program uses.
+amigaos4 = { path = "../..", features = ["intuition"] }

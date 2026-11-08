@@ -1,0 +1,17 @@
+[package]
+name = "vkplasma"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "vkplasma"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = "debuginfo"
+
+[dependencies]
+amigaos4 = { path = "../..", features = ["graphics", "intuition", "vulkan", "ash"] }
+ash = { version = "0.38", default-features = false }

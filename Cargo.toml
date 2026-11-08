@@ -1,0 +1,180 @@
+[package]
+name = "amigaos4"
+version = "0.1.0"
+edition = "2021"
+description = "AmigaOS 4.1 for Rust: SDK bindings, PowerPC helpers, an Exec allocator and safe wrappers for programs, libraries and device drivers"
+license = "MIT"
+repository = "https://github.com/derfsss/rust-amigaos4-crate"
+readme = "README.md"
+keywords = ["amigaos", "amiga", "powerpc", "ffi", "no_std"]
+categories = ["external-ffi-bindings", "no-std", "os"]
+# Only the crate itself ships; apps, testprogs, examples, templates and
+# tools stay in the repo.
+include = ["/src", "/glue", "/LICENSE", "/README.md"]
+publish = false
+autoexamples = false
+
+[lints.rust]
+# target_os = "amigaos" exists only in the AmigaLabs compiler; host builds
+# would otherwise warn on every gate.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("amigaos"))'] }
+
+[features]
+default = ["std", "dos", "utility"]
+
+# Use the target's std (clib4). Drivers turn default features off.
+std = []
+
+# Exec device driver building blocks: IoReq, RequestQueue, Worker.
+device = []
+# SANA-II network devices: layouts, constants, a driver's buffer management.
+sana2 = ["device", "utility"]
+# virtio devices over PCI: rings, queues, the legacy and modern interfaces.
+virtio = []
+# vulkan.library (the Khronos loader as an AmigaOS library): its vkGetInstanceProcAddr and
+# VK_AMIGA_surface. `ash` adds an ash::Entry on it (the one optional
+# dependency).
+vulkan = []
+ash = ["vulkan", "dep:ash"]
+# bsdsocket.library (Roadshow): the SocketIFace vtable (SDK netinclude),
+# socket constants, interface queries and the network statistics layouts.
+bsdsocket = ["utility"]
+
+# ---- SDK interfaces: one feature each (exec is always built) ----
+acpi = []
+ahi = []
+ahisub = []
+amigaguide = []
+amigainput = []
+amissl = []
+amisslmaster = []
+application = []
+arexx = []
+asl = ["dos", "intuition"]
+# ReAction windows and gadgets (window.class, layout and the common gadgets).
+reaction = ["intuition", "listbrowser", "workbench", "speedbar"]
+battclock = []
+battmem = []
+bevel = []
+bitmap_gc = []
+blankermodule = []
+bootsd = []
+btree = []
+bullet = []
+button = []
+bzip2 = []
+camd = []
+camd_driver = []
+card = []
+catweasel = []
+charset = []
+checkbox = []
+chooser = []
+cia = []
+clicktab = []
+colorwheel = []
+commodities = []
+console = ["device", "timer"]
+cw3_floppy = []
+cw3_gameport = []
+cw3_keyboard = []
+cw3_sid = []
+cybergfx = []
+cyrus = []
+datatypes = ["dos"]
+datebrowser = []
+debug = []
+diffview = []
+diskfont = []
+diskio = []
+docky = []
+dos = []
+drawlist = []
+dtclass = []
+elf = ["dos"]
+expansion = []
+expat = []
+filesysbox = []
+filler = []
+fsldma = []
+fuelgauge = []
+gadtools = []
+getcolor = []
+getfile = []
+getfont = []
+getscreenmode = []
+glyph = []
+graphics = []
+hunk = []
+i2c = []
+i2c_resource = []
+icon = []
+iconmodule = []
+iffparse = []
+input = []
+integer = []
+intuition = []
+keymap = []
+label = []
+language = []
+layers = ["graphics"]
+layout = []
+listbrowser = []
+locale = []
+lowlevel = []
+lzma = []
+misc = []
+mmu = []
+mounter = []
+mounter_private = []
+nv = []
+openfirmware = []
+p96 = []
+palette = []
+partition = []
+pasdma = []
+pci = []
+penmap = []
+perfmon = []
+picture = []
+# popupmenu.class pop-up menus (the popup module).
+popupmenu = ["intuition"]
+potgo = []
+prefs_objects = []
+radiobutton = []
+ramdrive = []
+realtime = []
+requester = []
+resource = []
+rexxsys = []
+screenblanker = []
+scroller = []
+sketchboard = []
+slider = []
+space = []
+speedbar = []
+string_gc = []
+textclip = []
+texteditor = []
+timer = ["device"]
+timesync = []
+timezone = []
+usbfd = []
+usbhcd = []
+usbresource = []
+usbsys = []
+utility = []
+version = []
+virtual_gc = []
+warp3d = []
+window = []
+workbench = ["dos"]
+xadmaster = []
+xena = []
+z = []
+
+full-sdk = ["acpi", "ahi", "ahisub", "amigaguide", "amigainput", "amissl", "amisslmaster", "application", "arexx", "asl", "battclock", "battmem", "bevel", "bitmap_gc", "blankermodule", "bootsd", "bsdsocket", "btree", "bullet", "button", "bzip2", "camd", "camd_driver", "card", "catweasel", "charset", "checkbox", "chooser", "cia", "clicktab", "colorwheel", "commodities", "console", "cw3_floppy", "cw3_gameport", "cw3_keyboard", "cw3_sid", "cybergfx", "cyrus", "datatypes", "datebrowser", "debug", "diffview", "diskfont", "diskio", "docky", "dos", "drawlist", "dtclass", "elf", "expansion", "expat", "filesysbox", "filler", "fsldma", "fuelgauge", "gadtools", "getcolor", "getfile", "getfont", "getscreenmode", "glyph", "graphics", "hunk", "i2c", "i2c_resource", "icon", "iconmodule", "iffparse", "input", "integer", "intuition", "keymap", "label", "language", "layers", "layout", "listbrowser", "locale", "lowlevel", "lzma", "misc", "mmu", "mounter", "mounter_private", "nv", "openfirmware", "p96", "palette", "partition", "pasdma", "pci", "penmap", "perfmon", "picture", "popupmenu", "potgo", "prefs_objects", "radiobutton", "ramdrive", "realtime", "requester", "resource", "rexxsys", "screenblanker", "scroller", "sketchboard", "slider", "space", "speedbar", "string_gc", "textclip", "texteditor", "timer", "timesync", "timezone", "usbfd", "usbhcd", "usbresource", "usbsys", "utility", "version", "virtual_gc", "warp3d", "window", "workbench", "xadmaster", "xena", "z"]
+
+[dependencies]
+# Vulkan bindings for the `ash` feature (no_std: default features off).
+ash = { version = "0.38", default-features = false, optional = true }

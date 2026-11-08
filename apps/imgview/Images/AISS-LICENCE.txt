@@ -1,0 +1,17 @@
+The images in this drawer (nav_west, nav_east, zoom_out, zoom_in,
+zoom_100, fit, open, lock) are from AISS 4.22, the Amiga Image Storage System,
+by Martin "Mason" Merz (http://www.masonicons.de). They are included
+unmodified.
+
+They are licensed under the Creative Commons Attribution-NonCommercial-
+NoDerivs 2.0 Germany licence (CC BY-NC-ND 2.0 DE):
+http://creativecommons.org/licenses/by-nc-nd/2.0/de/deed.en
+
+- Attribution: credit the author as above, in no way that suggests he
+  endorses you or your use of the work.
+- Non-commercial: the images may not be used for commercial purposes.
+- No derivative works: the images may not be altered, transformed or
+  built upon.
+
+This licence covers these images only; the rest of imgview and the
+amigaos4 crate are under the crate's own licence.

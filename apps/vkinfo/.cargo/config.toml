@@ -1,0 +1,11 @@
+# Build for the AmigaLabs powerpc-unknown-amigaos target.
+#
+# A program: an ordinary Rust binary with std on clib4. rustc links it with
+# the target's linker, ppc-amigaos-gcc -mcrt=clib4; tools/ppc-amigaos-gcc
+# runs that from the cross-compiler image when it is not installed. See the
+# repository README for how to install the AmigaLabs compiler.
+[build]
+target = "powerpc-unknown-amigaos"
+
+[target.powerpc-unknown-amigaos]
+linker = "../../tools/ppc-amigaos-gcc"

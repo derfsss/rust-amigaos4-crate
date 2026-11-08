@@ -1,0 +1,30 @@
+name: CI
+
+# Host-side checks only. GitHub's runners do not have the AmigaLabs compiler,
+# so powerpc-unknown-amigaos builds and links are run locally with
+# tools/build-toolchain.sh and tools/build-package.sh (see README).
+# The SDK audit passes with a notice here: the SDK headers are not on the
+# runner.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  host:
+    name: Host tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Default features
+        run: cargo test
+      - name: Driver configuration (no default features)
+        run: cargo test --no-default-features
+      - name: Every interface
+        run: cargo test --features full-sdk

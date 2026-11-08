@@ -1,0 +1,29 @@
+#!/bin/bash
+# The linker for powerpc-unknown-amigaos programs built on Linux/WSL.
+#
+# The target's linker is ppc-amigaos-gcc (with -mcrt=clib4 from the target
+# spec). When that is on PATH it is run directly; otherwise the one in the
+# cross-compiler image is, with the paths rustc passes (the target
+# directory, the toolchain's sysroot under $HOME, /tmp, /mnt) mounted at
+# the same places and the caller's uid, so the output belongs to the user.
+#
+# A program names it in its .cargo/config.toml:
+#   [target.powerpc-unknown-amigaos]
+#   linker = "<path to this repository>/tools/ppc-amigaos-gcc"
+set -euo pipefail
+IMAGE="${AMIGA_GCC_IMAGE:-walkero/amigagccondocker:os4-gcc15-3.6.1}"
+
+self="$(readlink -f "$0")"
+native="$(command -v ppc-amigaos-gcc || true)"
+if [ -n "$native" ] && [ "$(readlink -f "$native")" != "$self" ]; then
+    exec "$native" "$@"
+fi
+
+command -v docker >/dev/null || { echo "ppc-amigaos-gcc: no ppc-amigaos-gcc on PATH and no docker" >&2; exit 1; }
+mounts=(-v "$HOME:$HOME" -v /tmp:/tmp)
+[ -d /mnt ] && mounts+=(-v /mnt:/mnt)
+case "$PWD" in
+    "$HOME"*|/tmp*|/mnt*) ;;
+    *) mounts+=(-v "$PWD:$PWD") ;;
+esac
+exec docker run --rm -i -u "$(id -u):$(id -g)" "${mounts[@]}" -w "$PWD" "$IMAGE" ppc-amigaos-gcc "$@"
