@@ -80,6 +80,8 @@ pub mod device;
 pub mod dos;
 #[cfg(feature = "sana2")]
 pub mod sana2;
+#[cfg(feature = "sana2")]
+pub mod sana2ext;
 #[cfg(feature = "bsdsocket")]
 pub mod bsdsocket;
 pub mod error;

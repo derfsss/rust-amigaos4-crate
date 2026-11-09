@@ -4,6 +4,7 @@
 # successful compile is the check. Run on Linux (WSL works) with Docker:
 #   bash tools/check-layout.sh
 #
+# tests/layout/sana2ext.c checks the crate's own include/devices/sana2ext.h.
 # tests/layout/vulkan.c also needs the Vulkan headers, which are not in the
 # AmigaOS SDK: by default the copy in third_party/vulkan/include; set
 # VULKAN_SDK_INCLUDE to another include directory to check against that.
@@ -23,6 +24,8 @@ for f in tests/layout/*.c; do
     extra=""
     if [ "$f" = tests/layout/vulkan.c ]; then
         extra="-I/vk"
+    elif [ "$f" = tests/layout/sana2ext.c ]; then
+        extra="-I/src/include"
     fi
     ppc-amigaos-gcc -fsyntax-only -D__USE_INLINE__ $extra "$f"
     echo "ok $f"

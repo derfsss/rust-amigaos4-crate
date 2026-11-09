@@ -619,7 +619,9 @@ first; a Kickstart driver may keep it for good with `core::mem::forget`.
 Feature `sana2`. **SANA-II** is AmigaOS's standard for network device
 drivers: a protocol stack (TCP/IP) opens the driver and sends
 `IOSana2Req` requests. The `sana2` module covers Revision 7 of the
-standard.
+standard. The `sana2ext` module (same feature) adds unofficial extensions
+for batches of frames, checksum offload and segmentation; see
+[sana2ext.md](sana2ext.md).
 
 ### Requests: `IOSana2Req` and `S2Req`
 

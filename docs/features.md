@@ -50,7 +50,7 @@ not compiling:
 |---|---|---|---|---|
 | `std` (default) | `std` trait impls (`std::error::Error` for `AmigaError`); `track::install_std_hook` | – | programs | [programs.md](programs.md) |
 | `device` | `device` (driver building blocks: `IoReq`, `RequestQueue`, `Worker`, `answer_device_query`, command and error constants) and `devio` (using a device: `Device`, requests, `InFlight`) | – | both | [devices/writing-devices.md](devices/writing-devices.md), [devices/using-devices.md](devices/using-devices.md) |
-| `sana2` | `sana2`: SANA-II Revision 7 structures, constants, `S2Req`, `BufferManagement` | `device`, `utility` | both | [devices/writing-devices.md](devices/writing-devices.md) |
+| `sana2` | `sana2`: SANA-II Revision 7 structures, constants, `S2Req`, `BufferManagement`; `sana2ext`: the unofficial extensions ([devices/sana2ext.md](devices/sana2ext.md)) | `device`, `utility` | both | [devices/writing-devices.md](devices/writing-devices.md) |
 | `virtio` | `virtio`: split rings, `Virtqueue`, legacy and modern PCI interfaces, `PciTransport`, `Notifier`, `virtio::net` | – | both (drivers) | [devices/writing-devices.md](devices/writing-devices.md) |
 | `vulkan` | `vulkan`: `get_instance_proc_addr`, `instance_version`, VK_AMIGA_surface types; with `intuition`, `create_amiga_surface` on a window | – | both; a GPU needs `std` | [vulkan.md](vulkan.md) |
 | `ash` | `vulkan::entry()` giving an `ash::Entry`, and `AmigaSurface` | `vulkan`, the `ash` crate 0.38 (the crate's only optional dependency) | both; a GPU needs `std` | [vulkan.md](vulkan.md) |
