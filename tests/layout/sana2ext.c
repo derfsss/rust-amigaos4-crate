@@ -20,6 +20,19 @@ A(offsetof(struct S2XFrameChecksum, s2xfc_Start) == H + 4 && offsetof(struct S2X
 A(sizeof(struct S2XFrameSegment) == H + 8 && offsetof(struct S2XFrameSegment, s2xfs_Protocol) == H);
 A(offsetof(struct S2XFrameSegment, s2xfs_SegSize) == H + 4 && offsetof(struct S2XFrameSegment, s2xfs_HdrLen) == H + 6);
 A(sizeof(struct S2XBatch) == 16 + 3 * P && offsetof(struct S2XBatch, s2xb_Count) == 4 && offsetof(struct S2XBatch, s2xb_Frames) == 8);
-A(offsetof(struct S2XBatch, s2xb_Done) == 8 + 3 * P && offsetof(struct S2XBatch, s2xb_Reserved) == 12 + 3 * P);
+A(offsetof(struct S2XBatch, s2xb_Done) == 8 + 3 * P && offsetof(struct S2XBatch, s2xb_Queue) == 12 + 3 * P);
+A(sizeof(struct S2XCapMTU) == H + 8 && offsetof(struct S2XCapMTU, s2xcm_MinMTU) == H && offsetof(struct S2XCapMTU, s2xcm_MaxMTU) == H + 4);
+A(sizeof(struct S2XCapModeration) == H + 8 && offsetof(struct S2XCapModeration, s2xco_Flags) == H + 4);
+A(sizeof(struct S2XCapFlowControl) == H + 8 && offsetof(struct S2XCapFlowControl, s2xcf_Modes) == H);
+A(sizeof(struct S2XCapRSS) == H + 16 && offsetof(struct S2XCapRSS, s2xcr_MaxQueues) == H + 4 && offsetof(struct S2XCapRSS, s2xcr_KeySize) == H + 6);
+A(offsetof(struct S2XCapRSS, s2xcr_TableSize) == H + 8 && offsetof(struct S2XCapRSS, s2xcr_MaxTxQueues) == H + 10 && offsetof(struct S2XCapRSS, s2xcr_Reserved) == H + 12);
+A(sizeof(struct S2XFrameRSS) == H + 8 && offsetof(struct S2XFrameRSS, s2xfr_Hash) == H && offsetof(struct S2XFrameRSS, s2xfr_HashType) == H + 4);
+A(sizeof(struct S2XConfigure) == 8 + 4 * P && offsetof(struct S2XConfigure, s2xc_Flags) == 4);
+A(offsetof(struct S2XConfigure, s2xc_Items) == 8 && offsetof(struct S2XConfigure, s2xc_Failed) == 8 + 3 * P);
+A(sizeof(struct S2XSetMTU) == H + 8 && offsetof(struct S2XSetMTU, s2xsm_MTU) == H);
+A(sizeof(struct S2XSetModeration) == H + 8 && offsetof(struct S2XSetModeration, s2xso_TxMicros) == H + 4);
+A(sizeof(struct S2XSetFlowControl) == H + 8 && offsetof(struct S2XSetFlowControl, s2xsf_Modes) == H);
+A(sizeof(struct S2XSetRSS) == H + 8 + 2 * P && offsetof(struct S2XSetRSS, s2xsr_Queues) == H + 4 && offsetof(struct S2XSetRSS, s2xsr_TableSize) == H + 6);
+A(offsetof(struct S2XSetRSS, s2xsr_Key) == H + 8 && offsetof(struct S2XSetRSS, s2xsr_Table) == H + 8 + P);
 /* Not on an official SANA-II command */
-A(S2X_QUERY > S2_SANA2HOOK && S2X_WRITEBATCH < 0xC200);
+A(S2X_QUERY > S2_SANA2HOOK && S2X_CONFIGURE < 0xC200);

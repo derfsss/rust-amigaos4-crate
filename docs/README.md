@@ -88,7 +88,7 @@ Both are built with `tools/build-package.sh <folder>` on Linux or WSL.
 |---|---|
 | [devices/using-devices.md](devices/using-devices.md) | Opening an exec device and doing I/O from a program; timer.device. |
 | [devices/writing-devices.md](devices/writing-devices.md) | Writing an exec device: requests, unit tasks, quick I/O, AbortIO, SANA-II, virtio, PCI. |
-| [devices/sana2ext.md](devices/sana2ext.md) | SANA-II extensions (unofficial): batches of frames, checksum offload, segmentation; include/devices/sana2ext.h. |
+| [devices/sana2ext.md](devices/sana2ext.md) | SANA-II extensions (unofficial): batches of frames, checksum offload, segmentation, RSS queues, settings (MTU, moderation, flow control); include/devices/sana2ext.h. |
 
 ### DOS and system libraries
 

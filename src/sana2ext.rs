@@ -5,11 +5,15 @@
 //!
 //! - [`S2XQuery`] (`S2X_QUERY`): what a driver offers, with its list of
 //!   capability items ([`S2XCapBatch`], [`S2XCapChecksum`],
-//!   [`S2XCapSegment`]).
+//!   [`S2XCapSegment`], [`S2XCapMTU`], [`S2XCapModeration`],
+//!   [`S2XCapFlowControl`], [`S2XCapRSS`]).
 //! - [`S2XBatch`] of [`S2XFrame`]s (`S2X_READBATCH`, `S2X_WRITEBATCH`):
-//!   several frames per request, each frame a standard
+//!   several frames per request, on one queue, each frame a standard
 //!   [`IOSana2Req`](crate::sana2::IOSana2Req) plus its items
-//!   ([`S2XFrameChecksum`], [`S2XFrameSegment`]).
+//!   ([`S2XFrameChecksum`], [`S2XFrameSegment`], [`S2XFrameRSS`]).
+//! - [`S2XConfigure`] (`S2X_CONFIGURE`): read or change the unit's settings
+//!   ([`S2XSetMTU`], [`S2XSetModeration`], [`S2XSetFlowControl`],
+//!   [`S2XSetRSS`]).
 //!
 //! Every item starts with an [`S2XItem`] header (a `MinNode`, a type and
 //! the item's size, as `struct PCICapability`); a reader uses the types it
@@ -42,15 +46,26 @@ pub const S2X_VERSION: u16 = 1;
 pub const S2X_QUERY: u16 = 0xC100;
 pub const S2X_READBATCH: u16 = 0xC101;
 pub const S2X_WRITEBATCH: u16 = 0xC102;
+pub const S2X_CONFIGURE: u16 = 0xC103;
 
 /// Capability item types (S2X_QUERY's list).
 pub const S2XCAP_BATCH: u32 = 0x0001;
 pub const S2XCAP_RXCHECKSUM: u32 = 0x0002;
 pub const S2XCAP_TXCHECKSUM: u32 = 0x0003;
 pub const S2XCAP_SEGMENT: u32 = 0x0004;
+pub const S2XCAP_MTU: u32 = 0x0005;
+pub const S2XCAP_MODERATION: u32 = 0x0006;
+pub const S2XCAP_FLOWCONTROL: u32 = 0x0007;
+pub const S2XCAP_RSS: u32 = 0x0008;
 /// Frame item types (S2XFrame's list).
 pub const S2XFRAME_CHECKSUM: u32 = 0x1001;
 pub const S2XFRAME_SEGMENT: u32 = 0x1002;
+pub const S2XFRAME_RSS: u32 = 0x1003;
+/// Setting item types (S2X_CONFIGURE's list).
+pub const S2XSET_MTU: u32 = 0x2001;
+pub const S2XSET_MODERATION: u32 = 0x2002;
+pub const S2XSET_FLOWCONTROL: u32 = 0x2003;
+pub const S2XSET_RSS: u32 = 0x2004;
 /// Set in a type that belongs to one driver or stack: others ignore it.
 pub const S2XITEM_PRIVATE: u32 = 0x8000_0000;
 
@@ -59,6 +74,10 @@ pub const S2XF_BATCH: u32 = 1 << S2XCAP_BATCH;
 pub const S2XF_RXCHECKSUM: u32 = 1 << S2XCAP_RXCHECKSUM;
 pub const S2XF_TXCHECKSUM: u32 = 1 << S2XCAP_TXCHECKSUM;
 pub const S2XF_SEGMENT: u32 = 1 << S2XCAP_SEGMENT;
+pub const S2XF_MTU: u32 = 1 << S2XCAP_MTU;
+pub const S2XF_MODERATION: u32 = 1 << S2XCAP_MODERATION;
+pub const S2XF_FLOWCONTROL: u32 = 1 << S2XCAP_FLOWCONTROL;
+pub const S2XF_RSS: u32 = 1 << S2XCAP_RSS;
 
 /// Protocols (S2XCapChecksum, S2XCapSegment, S2XFrameSegment).
 pub const S2XCSUM_IPV4: u32 = 0x0001;
@@ -75,6 +94,26 @@ pub const S2XCS_L4_BAD: u32 = 0x0008;
 /// ... and send requests (set by the stack).
 pub const S2XCS_FILL_IP: u32 = 0x0100;
 pub const S2XCS_FILL_L4: u32 = 0x0200;
+
+/// S2XCapModeration flags: which directions can be set.
+pub const S2XMOD_RX: u32 = 0x0001;
+pub const S2XMOD_TX: u32 = 0x0002;
+
+/// Flow-control modes (S2XCapFlowControl, S2XSetFlowControl).
+pub const S2XFC_RX: u32 = 0x0001;
+pub const S2XFC_TX: u32 = 0x0002;
+pub const S2XFC_AUTO: u32 = 0x0004;
+
+/// RSS hash types (S2XCapRSS, S2XSetRSS, S2XFrameRSS).
+pub const S2XRSS_IPV4: u32 = 0x0001;
+pub const S2XRSS_TCPV4: u32 = 0x0002;
+pub const S2XRSS_UDPV4: u32 = 0x0004;
+pub const S2XRSS_IPV6: u32 = 0x0008;
+pub const S2XRSS_TCPV6: u32 = 0x0010;
+pub const S2XRSS_UDPV6: u32 = 0x0020;
+
+/// S2XConfigure flags.
+pub const S2XCF_READ: u32 = 0x0001;
 
 /// `struct MinList` (exec/lists.h).
 #[repr(C, packed(2))]
@@ -170,7 +209,8 @@ pub unsafe fn items(l: *const MinList) -> impl Iterator<Item = *mut S2XItem> {
 }
 
 /// The first item of type `ty` in `l` that is at least `size_of::<T>()`
-/// bytes (a smaller one is from an older version: fields are missing).
+/// bytes. A smaller one (from an older version, with fields missing) is
+/// skipped; a caller that can use a shorter item walks [`items`] itself.
 ///
 /// # Safety
 /// As [`items`]; `T` is the item structure `ty` names.
@@ -244,6 +284,50 @@ pub struct S2XCapSegment {
     pub s2xcs_Reserved: u32,
 }
 
+/// S2XCAP_MTU: the MTUs S2XSET_MTU accepts (as Sana2DeviceQuery's MTU).
+#[repr(C, packed(2))]
+pub struct S2XCapMTU {
+    pub s2xcm_Header: S2XItem,
+    pub s2xcm_MinMTU: u32,
+    pub s2xcm_MaxMTU: u32,
+}
+
+/// S2XCAP_MODERATION.
+#[repr(C, packed(2))]
+pub struct S2XCapModeration {
+    pub s2xco_Header: S2XItem,
+    /// Longest interval; 0 (off) is always allowed.
+    pub s2xco_MaxMicros: u32,
+    /// S2XMOD_... bits.
+    pub s2xco_Flags: u32,
+}
+
+/// S2XCAP_FLOWCONTROL.
+#[repr(C, packed(2))]
+pub struct S2XCapFlowControl {
+    pub s2xcf_Header: S2XItem,
+    /// S2XFC_... modes the card supports.
+    pub s2xcf_Modes: u32,
+    /// 0.
+    pub s2xcf_Reserved: u32,
+}
+
+/// S2XCAP_RSS: receive-side scaling (Toeplitz hash, indirection table).
+#[repr(C, packed(2))]
+pub struct S2XCapRSS {
+    pub s2xcr_Header: S2XItem,
+    /// S2XRSS_... the card can hash.
+    pub s2xcr_HashTypes: u32,
+    /// Receive queues.
+    pub s2xcr_MaxQueues: u16,
+    pub s2xcr_KeySize: u16,
+    pub s2xcr_TableSize: u16,
+    /// Transmit queues.
+    pub s2xcr_MaxTxQueues: u16,
+    /// 0.
+    pub s2xcr_Reserved: u32,
+}
+
 /// One frame of a batch.
 #[repr(C, packed(2))]
 pub struct S2XFrame {
@@ -276,6 +360,15 @@ pub struct S2XFrameSegment {
     pub s2xfs_HdrLen: u16,
 }
 
+/// S2XFRAME_RSS (receive): the card's hash.
+#[repr(C, packed(2))]
+pub struct S2XFrameRSS {
+    pub s2xfr_Header: S2XItem,
+    pub s2xfr_Hash: u32,
+    /// The S2XRSS_... type used; 0: not hashed.
+    pub s2xfr_HashType: u32,
+}
+
 /// S2X_READBATCH / S2X_WRITEBATCH.
 #[repr(C, packed(2))]
 pub struct S2XBatch {
@@ -285,8 +378,61 @@ pub struct S2XBatch {
     pub s2xb_Frames: MinList,
     /// Set by the driver: frames filled (read) or taken (write).
     pub s2xb_Done: u32,
+    /// Receive / transmit queue; 0 without RSS.
+    pub s2xb_Queue: u32,
+}
+
+/// S2X_CONFIGURE.
+#[repr(C, packed(2))]
+pub struct S2XConfigure {
+    /// Bytes of this structure.
+    pub s2xc_Size: u32,
+    /// S2XCF_... bits.
+    pub s2xc_Flags: u32,
+    /// S2XSet... items.
+    pub s2xc_Items: MinList,
+    /// Set by the driver on a refusal: the item it refused; else NULL.
+    pub s2xc_Failed: *mut S2XItem,
+}
+
+/// S2XSET_MTU.
+#[repr(C, packed(2))]
+pub struct S2XSetMTU {
+    pub s2xsm_Header: S2XItem,
+    pub s2xsm_MTU: u32,
     /// 0.
-    pub s2xb_Reserved: u32,
+    pub s2xsm_Reserved: u32,
+}
+
+/// S2XSET_MODERATION: microseconds between interrupts; 0 is off.
+#[repr(C, packed(2))]
+pub struct S2XSetModeration {
+    pub s2xso_Header: S2XItem,
+    pub s2xso_RxMicros: u32,
+    pub s2xso_TxMicros: u32,
+}
+
+/// S2XSET_FLOWCONTROL.
+#[repr(C, packed(2))]
+pub struct S2XSetFlowControl {
+    pub s2xsf_Header: S2XItem,
+    /// S2XFC_... modes; 0 is off.
+    pub s2xsf_Modes: u32,
+    /// 0.
+    pub s2xsf_Reserved: u32,
+}
+
+/// S2XSET_RSS: Queues 1 turns RSS off; Key and Table may be NULL.
+#[repr(C, packed(2))]
+pub struct S2XSetRSS {
+    pub s2xsr_Header: S2XItem,
+    pub s2xsr_HashTypes: u32,
+    pub s2xsr_Queues: u16,
+    pub s2xsr_TableSize: u16,
+    /// KeySize bytes, or NULL.
+    pub s2xsr_Key: *mut u8,
+    /// TableSize queue numbers, or NULL.
+    pub s2xsr_Table: *mut u8,
 }
 
 // The header's layout rule, checked for this target's pointer size (the
@@ -311,7 +457,22 @@ const _: () = {
     assert!(size_of::<S2XFrameSegment>() == H + 8 && offset_of!(S2XFrameSegment, s2xfs_SegSize) == H + 4);
     assert!(size_of::<S2XBatch>() == 16 + 3 * P);
     assert!(offset_of!(S2XBatch, s2xb_Count) == 4 && offset_of!(S2XBatch, s2xb_Frames) == 8 && offset_of!(S2XBatch, s2xb_Done) == 8 + 3 * P);
-    let sizes = [size_of::<S2XItem>(), size_of::<S2XQuery>(), size_of::<S2XCapBatch>(), size_of::<S2XCapChecksum>(), size_of::<S2XCapSegment>(), size_of::<S2XFrame>(), size_of::<S2XFrameChecksum>(), size_of::<S2XFrameSegment>(), size_of::<S2XBatch>()];
+    assert!(offset_of!(S2XBatch, s2xb_Queue) == 12 + 3 * P);
+    assert!(size_of::<S2XCapMTU>() == H + 8 && offset_of!(S2XCapMTU, s2xcm_MaxMTU) == H + 4);
+    assert!(size_of::<S2XCapModeration>() == H + 8 && offset_of!(S2XCapModeration, s2xco_Flags) == H + 4);
+    assert!(size_of::<S2XCapFlowControl>() == H + 8);
+    assert!(size_of::<S2XCapRSS>() == H + 16 && offset_of!(S2XCapRSS, s2xcr_MaxQueues) == H + 4);
+    assert!(offset_of!(S2XCapRSS, s2xcr_KeySize) == H + 6 && offset_of!(S2XCapRSS, s2xcr_TableSize) == H + 8 && offset_of!(S2XCapRSS, s2xcr_MaxTxQueues) == H + 10 && offset_of!(S2XCapRSS, s2xcr_Reserved) == H + 12);
+    assert!(size_of::<S2XFrameRSS>() == H + 8 && offset_of!(S2XFrameRSS, s2xfr_HashType) == H + 4);
+    assert!(size_of::<S2XConfigure>() == 8 + 4 * P);
+    assert!(offset_of!(S2XConfigure, s2xc_Items) == 8 && offset_of!(S2XConfigure, s2xc_Failed) == 8 + 3 * P);
+    assert!(size_of::<S2XSetMTU>() == H + 8 && size_of::<S2XSetModeration>() == H + 8 && size_of::<S2XSetFlowControl>() == H + 8);
+    assert!(offset_of!(S2XSetModeration, s2xso_TxMicros) == H + 4);
+    assert!(size_of::<S2XSetRSS>() == H + 8 + 2 * P && offset_of!(S2XSetRSS, s2xsr_Queues) == H + 4);
+    assert!(offset_of!(S2XSetRSS, s2xsr_TableSize) == H + 6 && offset_of!(S2XSetRSS, s2xsr_Key) == H + 8 && offset_of!(S2XSetRSS, s2xsr_Table) == H + 8 + P);
+    let sizes = [size_of::<S2XItem>(), size_of::<S2XQuery>(), size_of::<S2XCapBatch>(), size_of::<S2XCapChecksum>(), size_of::<S2XCapSegment>(), size_of::<S2XFrame>(), size_of::<S2XFrameChecksum>(), size_of::<S2XFrameSegment>(), size_of::<S2XBatch>(),
+        size_of::<S2XCapMTU>(), size_of::<S2XCapModeration>(), size_of::<S2XCapFlowControl>(), size_of::<S2XCapRSS>(), size_of::<S2XFrameRSS>(),
+        size_of::<S2XConfigure>(), size_of::<S2XSetMTU>(), size_of::<S2XSetModeration>(), size_of::<S2XSetFlowControl>(), size_of::<S2XSetRSS>()];
     let mut i = 0;
     while i < sizes.len() {
         assert!(sizes[i] % P == 0);
