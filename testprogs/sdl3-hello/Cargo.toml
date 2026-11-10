@@ -1,0 +1,20 @@
+[package]
+name = "sdl3-hello"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "sdl3-hello"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+# Not `true` or "symbols": the linker's --strip-all makes a file AmigaOS
+# will not load (IoErr 305).
+strip = "debuginfo"
+
+[dependencies]
+amigaos4 = { path = "../.." }
+sdl3-sys = { version = "0.7.3", default-features = false }

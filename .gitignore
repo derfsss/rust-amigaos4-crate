@@ -14,6 +14,8 @@ testprogs/libtest/libtest.debug
 testprogs/test-driver/test-driver
 testprogs/kick-test/rusttest.device
 testprogs/expunge/expunge
+testprogs/sdl3-hello/sdl3-hello
+testprogs/sdl3-demo/sdl3-demo
 examples/hello-driver/hello-driver
 examples/hello-library/hello.library
 examples/ram-device/ram.device

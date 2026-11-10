@@ -119,6 +119,7 @@ Both are built with `tools/build-package.sh <folder>` on Linux or WSL.
 | File | About |
 |---|---|
 | [vulkan.md](vulkan.md) | Vulkan through vulkan.library, VK_AMIGA_surface, and the `ash` binding. |
+| [sdl3.md](sdl3.md) | SDL3 in Rust programs: the image's clib4 SDL3, the `sdl3` / `sdl3-sys` crates, the libc patch. |
 
 ## Other places to look
 

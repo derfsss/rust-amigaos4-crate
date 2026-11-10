@@ -1,0 +1,26 @@
+[package]
+name = "sdl3-demo"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "sdl3-demo"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = "s"
+lto = true
+# Not `true` or "symbols": the linker's --strip-all makes a file AmigaOS
+# will not load (IoErr 305).
+strip = "debuginfo"
+
+[dependencies]
+amigaos4 = { path = "../.." }
+sdl3 = { version = "0.22.1", default-features = false }
+
+# crates.io's libc does not know AmigaOS (clib4); the toolchain's std uses
+# AmigaLabs' fork, and so must every crate in the program that uses libc
+# (sdl3 does). Pinned to the commit the toolchain was built with.
+[patch.crates-io]
+libc = { git = "https://github.com/AmigaLabs/libc", rev = "4982c2db17c19cb599ec29c268651bbdec324114" }
