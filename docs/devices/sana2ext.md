@@ -236,7 +236,10 @@ offers it. A driver that meets a frame item type it does not know skips it.
 `S2XCSUM_IPV4` fills the IPv4 header checksum on any IPv4 frame with
 `FILL_IP`, whatever the payload (ICMP, UDP, a fragment), not only as part
 of a TCP or UDP checksum. If its card cannot do that for some frame, the
-driver computes the header checksum itself.
+driver computes the header checksum itself. A request that cannot apply
+(`FILL_IP` on a frame that is not IPv4, or a checksum position past the end
+of the frame) refuses that frame with `S2ERR_BAD_ARGUMENT` and
+`S2WERR_GENERIC_ERROR`.
 
 ## Settings: S2X_CONFIGURE
 
@@ -247,7 +250,7 @@ driver computes the header checksum itself.
 |---|---|---|
 | `S2XSET_MTU` | `S2XSetMTU` | the MTU (packet data, without the link header, as `Sana2DeviceQuery`'s MTU), within `S2XCapMTU`; `S2_DEVICEQUERY` reports it afterwards |
 | `S2XSET_MODERATION` | `S2XSetModeration` | microseconds between interrupts for receive and transmit, 0 is off; without `S2XMOD_TX` the receive value applies to both |
-| `S2XSET_FLOWCONTROL` | `S2XSetFlowControl` | the `S2XFC_` modes to use, 0 is off |
+| `S2XSET_FLOWCONTROL` | `S2XSetFlowControl` | the `S2XFC_` modes to use, 0 is off; with `S2XFC_AUTO` the card advertises pause (IEEE 802.3 annex 28B) and then uses only the directions given (RX, TX or both) |
 | `S2XSET_RSS` | `S2XSetRSS` | hash types, number of receive queues (1 turns RSS off), the key (exactly `s2xcr_KeySize` bytes) and the indirection table (exactly `s2xcr_TableSize` entries); transmit queues are the smaller of the receive queues and `s2xcr_MaxTxQueues` |
 
 - **Changing.** Without `S2XCF_READ` the driver checks every item before it
@@ -257,11 +260,16 @@ driver computes the header checksum itself.
   that item and returns the error (`S2ERR_NOT_SUPPORTED`,
   `S2ERR_BAD_ARGUMENT` or `S2ERR_BAD_STATE`). Otherwise it applies the items
   in list order and writes back the values it applied, since a value may be
-  rounded (moderation to the card's step, for example).
+  rounded (moderation to the card's step, for example). A failure while
+  applying, after the checks passed (`S2ERR_NO_RESOURCES` when new receive
+  buffers cannot be allocated, a hardware error), stops at that item:
+  earlier items stay applied, `s2xc_Failed` points at the failing one, and
+  the stack reads the settings back with `S2XCF_READ`.
 - **Settings and posted requests.** A setting never changes under a
   request in flight. The driver answers `S2ERR_BAD_STATE` (with
   `s2xc_Failed` set) to `S2XSET_MTU` while any opener has a receive request
-  posted (`CMD_READ` or `S2X_READBATCH`), since those buffers were sized
+  posted (`CMD_READ`, `S2_READORPHAN` or `S2X_READBATCH`; also when the MTU
+  would not change), since those buffers were sized
   for the old MTU, and to `S2XSET_RSS` while requests are posted on a queue
   it would remove. A stack therefore changes the MTU with no receive request
   posted (it aborts and waits for its own first), then reads the new MTU
