@@ -158,8 +158,20 @@ refuses it stops: that frame's request has the error (`io_Error`,
 out in order; frames on different queues have no order between them.
 
 **Frames after the first `s2xb_Done`.** After a read batch their requests
-and items are undefined. After a write batch they are untouched (not sent,
-no error set), so the stack sends them again.
+and items are undefined. After a write batch:
+
+- the frame at index `s2xb_Done` (counting from 0) is the refused one when
+  the batch's request has an error: its request's `io_Error` (and
+  `ios2_WireError`) say why, and it was not sent;
+- every later frame is untouched: not sent, `io_Error` left as the stack
+  set it (0);
+- so a stack reads the frame at `s2xb_Done`: a non-zero `io_Error` means
+  refused (drop or retry it by its own policy), zero means not reached;
+  frames after it are sent again.
+
+A driver that runs out of transmit descriptors does not refuse: it holds
+the batch until there is room (like `CMD_WRITE`), so `s2xb_Done` is short
+of `s2xb_Count` only on a real refusal or an abort.
 
 **Abort.** `AbortIO` is called on the batch's request only. A read batch
 comes back with `IOERR_ABORTED` and whatever frames are filled (counted in

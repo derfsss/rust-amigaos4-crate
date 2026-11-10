@@ -323,6 +323,9 @@ struct S2XFrameRSS
 ** WRITEBATCH: frames are sent in list order; s2xb_Done counts those the
 ** driver took. At the first one it refuses it stops: that frame's request
 ** has the error, and so does the batch's.
+** After a write batch with an error, the frame at index s2xb_Done (from 0)
+** is the refused one (its io_Error says why; not sent). A full transmit
+** ring is not a refusal: the driver holds the batch until there is room.
 ** Frames after the first s2xb_Done: undefined after a read batch; untouched
 ** (not sent, no error set) after a write batch, so the stack sends them
 ** again.
