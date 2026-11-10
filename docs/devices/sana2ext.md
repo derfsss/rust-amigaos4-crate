@@ -227,7 +227,11 @@ adjusting lengths, sequence numbers, IP ids and checksums.
 header with `SANA2IOF_RAW`. The frame also carries an `S2XFRAME_CHECKSUM`
 with `S2XCS_FILL_L4` (and `S2XCS_FILL_IP` for IPv4), whose pseudo-header
 sum the stack computes with a length of 0: the card adds each segment's
-length.
+length. A segmentation request that does not match the frame (protocol,
+checksum Start/Offset, header length) or is outside the capability (size,
+segment count, a segment longer than the MTU) refuses that frame with
+`S2ERR_BAD_ARGUMENT` and `S2WERR_GENERIC_ERROR`; a driver that cannot
+segment at the moment answers `S2ERR_NOT_SUPPORTED`.
 
 A stack asks for a send-side item only when the driver's capability list
 offers it. A driver that meets a frame item type it does not know skips it.
@@ -304,6 +308,10 @@ Frames of one connection always hash to the same queue, so each task sees
 its connections' frames in order. Changing the table may move a
 connection to another queue; the stack does so only when it can hand the
 connection over. With one queue, or without RSS, everything is queue 0.
+
+A driver may offer several receive queues and one transmit queue
+(`s2xcr_MaxTxQueues` 1): write batches then name queue 0 only, and stack
+tasks share the one transmit queue.
 
 ## Numbers
 
