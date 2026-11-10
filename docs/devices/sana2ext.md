@@ -182,6 +182,29 @@ memory: `MEMF_SHARED`) and reuses them; the driver never allocates or frees
 any of them. The stack keeps a frame's items in ascending type order
 (checksum, segmentation, RSS), so a driver can stop walking early.
 
+**How a read batch fills.** The driver puts in every frame waiting when its
+receive pass runs, up to `s2xb_Count`, and replies the batch at the end of
+that pass. It does not hold a batch open across passes to fill it, so a
+stack keeps several batches posted per packet type.
+
+**Per-frame fields of a write batch.** Each frame's own request gives its
+`io_Command` (`S2_BROADCAST` and `S2_MULTICAST` are honoured; anything
+else is sent as `CMD_WRITE`) and its `io_Flags` (`SANA2IOF_RAW`). On a read
+batch, `SANA2IOF_RAW` comes from the batch's request and the packet filter
+(`S2_PacketFilter`) is asked for every frame; a frame it refuses is not put
+in the batch.
+
+**Malformed batches** are refused at `BeginIO`, with `s2xb_Done` not
+written:
+
+| Fault | `io_Error` | `ios2_WireError` |
+|---|---|---|
+| `ios2_StatData` NULL, or a frame without a request | `S2ERR_BAD_ARGUMENT` | `S2WERR_NULL_POINTER` |
+| `s2xb_Size` too small | `IOERR_BADLENGTH` | `S2WERR_BAD_STATDATA` |
+| `s2xb_Count` 0 or above `s2xcb_MaxFrames`, or a queue that does not exist | `S2ERR_BAD_ARGUMENT` | `S2WERR_GENERIC_ERROR` |
+
+`S2X_QUERY` with `s2xq_Size` below 8 succeeds and fills nothing.
+
 ## Frame items
 
 Offsets in frame items count from the first byte of the frame's data as the
