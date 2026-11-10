@@ -232,6 +232,12 @@ length.
 A stack asks for a send-side item only when the driver's capability list
 offers it. A driver that meets a frame item type it does not know skips it.
 
+`S2XCS_FILL_IP` and `S2XCS_FILL_L4` are independent: a driver that offers
+`S2XCSUM_IPV4` fills the IPv4 header checksum on any IPv4 frame with
+`FILL_IP`, whatever the payload (ICMP, UDP, a fragment), not only as part
+of a TCP or UDP checksum. If its card cannot do that for some frame, the
+driver computes the header checksum itself.
+
 ## Settings: S2X_CONFIGURE
 
 `S2X_CONFIGURE` (0xC103): `ios2_StatData` points to a
@@ -265,7 +271,9 @@ offers it. A driver that meets a frame item type it does not know skips it.
 - **Scope.** Settings belong to the unit: a change affects every opener.
   After a change the driver sends `S2EVENT_CONFIGCHANGED`. A change that
   needs the link reset (often the MTU) may also bring
-  `S2EVENT_OFFLINE` / `S2EVENT_ONLINE`.
+  `S2EVENT_OFFLINE` / `S2EVENT_ONLINE`. Receive requests posted during or
+  after such a reset stay queued until frames arrive; they are not answered
+  with an error because the link is down.
 - **Memory.** The items and any buffers they point to (the RSS key and
   table) are the caller's; the driver uses them only until it replies.
 
