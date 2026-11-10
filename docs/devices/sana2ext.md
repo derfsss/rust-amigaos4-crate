@@ -201,6 +201,7 @@ written:
 |---|---|---|
 | `ios2_StatData` NULL, or a frame without a request | `S2ERR_BAD_ARGUMENT` | `S2WERR_NULL_POINTER` |
 | `s2xb_Size` too small | `IOERR_BADLENGTH` | `S2WERR_BAD_STATDATA` |
+| a frame's `s2xf_Size` too small | `S2ERR_BAD_ARGUMENT` | `S2WERR_BAD_STATDATA` |
 | `s2xb_Count` 0 or above `s2xcb_MaxFrames`, or a queue that does not exist | `S2ERR_BAD_ARGUMENT` | `S2WERR_GENERIC_ERROR` |
 
 `S2X_QUERY` with `s2xq_Size` below 8 succeeds and fills nothing.
