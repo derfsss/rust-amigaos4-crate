@@ -283,7 +283,10 @@ of the frame) refuses that frame with `S2ERR_BAD_ARGUMENT` and
 - **Scope.** Settings belong to the unit: a change affects every opener.
   After a change the driver sends `S2EVENT_CONFIGCHANGED`. A change that
   needs the link reset (often the MTU) may also bring
-  `S2EVENT_OFFLINE` / `S2EVENT_ONLINE`. Receive requests posted during or
+  `S2EVENT_OFFLINE` / `S2EVENT_ONLINE`. A stack that changed a setting
+  puts it back before it closes the unit, unless the setting has changed
+  again since (it reads the settings back first and leaves any it did not
+  set last). Receive requests posted during or
   after such a reset stay queued until frames arrive; they are not answered
   with an error because the link is down.
 - **Memory.** The items and any buffers they point to (the RSS key and
